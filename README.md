@@ -38,7 +38,7 @@ reg-load-test -g <gatekeeper> [options]
 | `-s`, `--servername <name>` | Name identifying this tester instance in aliases | random 20-letter string |
 | `-p`, `--password <pw>` | Gatekeeper password (H.235) for all endpoints | – |
 | `-i`, `--interface <ip[:port]>` | Local interface to bind to, optionally with base port | all interfaces |
-| `-b`, `--baseport <port>` | Base TCP port for the H.323 listeners | random, 10000–49000 |
+| `-b`, `--baseport <port>` | Base TCP port for the H.323 listeners | random |
 | `-t`, `--trace` | Enable tracing; repeat for more detail (`-ttt`) | off |
 | `-o`, `--output <file>` | Write trace output to a file | stderr |
 | `--h46018enable` | Enable H.460.18 (only if H323Plus was built with H.460.18 support) | off |

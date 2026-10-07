@@ -118,7 +118,7 @@ void LoadTestProcess::Main()
     PString serverName = args.HasOption('s') ? args.GetOptionString('s') : ""; // default is a 20 char random string
     if (serverName.IsEmpty()) {
         for (unsigned i = 0; i < 20; ++i) {
-            serverName += (char)('a' + PRandom::Number(25));
+            serverName += (char)('a' + PRandom::Number(26));
         }
     }
 

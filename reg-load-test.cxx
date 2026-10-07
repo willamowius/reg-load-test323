@@ -118,19 +118,19 @@ void LoadTestProcess::Main()
     PString serverName = args.HasOption('s') ? args.GetOptionString('s') : ""; // default is a 20 char random string
     if (serverName.IsEmpty()) {
         for (unsigned i = 0; i < 20; ++i) {
-            serverName += (char)('a' + PRandom::Number(26));
+            serverName += (char)('a' + PRandom::Number(25));
         }
     }
 
     unsigned delayBetweenRegistrations = args.HasOption('d') ? args.GetOptionString('d').AsUnsigned() : 100; // default 100 ms
 
-    H323ListenerTCP * listener = NULL;
     PIPSocket::Address interfaceAddress(INADDR_ANY);
     WORD listenPort = args.HasOption('b') ? args.GetOptionString('b').AsUnsigned() : PRandom::Number(10, 50) * 1000; // base TCP port for H.323 listeners, never used
     if (args.HasOption('i')) {
         PString interface = args.GetOptionString('i');
         if (!SplitAddress(interface, interface, listenPort)) {
             cout << "Could not parse param of -i \"" << interface << "\" to ip address and port." << endl;
+            return;
         }
         interfaceAddress = interface;
     }
@@ -173,7 +173,7 @@ void LoadTestProcess::Main()
         PString username = namePrefix + PString("_") + serverName + PString("_") + PString(i + 1);
         ep->SetLocalUserName(username);
 
-        if (args.HasOption('p')) { // command line overrides config file
+        if (args.HasOption('p')) {
             PString gkPw = args.GetOptionString('p');
             ep->SetGatekeeperPassword(gkPw);
         }
@@ -191,7 +191,7 @@ void LoadTestProcess::Main()
         m_endpoints->push_back(ep);
         cout << "Endpoint " << ep->GetLocalUserName() << " is registered" << endl;
 
-        // TODO wait a moment after every n registrations to avoid flooding the gatekeeper with too many requests at once
+        // wait a moment to avoid flooding the gatekeeper with too many requests at once
         PThread::Sleep(delayBetweenRegistrations);
     }  
 

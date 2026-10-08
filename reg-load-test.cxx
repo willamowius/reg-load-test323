@@ -13,6 +13,9 @@
 
 PCREATE_PROCESS(LoadTestProcess);
 
+const unsigned REGISTRATION_RETRIES = 3;           // retries after a failed registration
+const unsigned REGISTRATION_RETRY_DELAY = 3000;    // wait between retries in ms
+
 void UnixShutdownHandler(int sig)
 {
 	LoadTestProcess::Shutdown();
@@ -141,8 +144,20 @@ void LoadTestProcess::Main()
         return;
     }
 
+    // report progress about every 10% of the requested endpoints
+    unsigned progressInterval = num_enpoints / 10;
+    if (progressInterval < 1)
+        progressInterval = 1;
+    unsigned numRegistered = 0;
+    unsigned numFailed = 0;
+
     m_endpoints = new list<LoadTestEndpoint *>();
     for (unsigned i = 0; i < num_enpoints; ++i) {
+        if (i > 0 && i % progressInterval == 0) {
+            cout << "Progress: " << i << "/" << num_enpoints << " attempted, "
+                 << numRegistered << " registered, " << numFailed << " failed" << endl;
+        }
+
         listenPort++;   // each endpoint gets it's own TCP listenport, that will never get used, but is required for H.323 endpoint creation
 
         LoadTestEndpoint * ep = new LoadTestEndpoint();
@@ -180,20 +195,34 @@ void LoadTestProcess::Main()
 
         // process gatekeeper registration options
         //cout << "Registering with gatekeeper \"" << gkAddr << "\" ..." << flush;
-        if (ep->SetGatekeeper(gkAddr, new H323TransportUDP(*ep, interfaceAddress))) {
-            //cout << "\nGatekeeper set to \"" << *ep->GetGatekeeper() << '"' << endl;
-        } else {
-            cout << "\nError registering with gatekeeper at \"" << gkAddr << '"' << endl;
+        bool registered = false;
+        for (unsigned attempt = 0; attempt <= REGISTRATION_RETRIES; ++attempt) {
+            if (attempt > 0) {
+                PTRACE(2, "Registration of " << username << " failed, retry " << attempt << " of " << REGISTRATION_RETRIES << " in " << REGISTRATION_RETRY_DELAY << " ms");
+                PThread::Sleep(REGISTRATION_RETRY_DELAY);
+            }
+            if (ep->SetGatekeeper(gkAddr, new H323TransportUDP(*ep, interfaceAddress))) {
+                registered = true;
+                break;
+            }
+        }
+        if (!registered) {
+            numFailed++;
+            PTRACE(1, "Error registering " << username << " with gatekeeper at " << gkAddr);
             delete ep;
             continue;
         }
 
+        numRegistered++;
         m_endpoints->push_back(ep);
-        cout << "Endpoint " << ep->GetLocalUserName() << " is registered" << endl;
 
         // wait a moment to avoid flooding the gatekeeper with too many requests at once
         PThread::Sleep(delayBetweenRegistrations);
-    }  
+    }
+
+    cout << "Done: " << num_enpoints << " attempted, "
+         << numRegistered << " registered, " << numFailed << " failed" << endl;
+	cout << "Ctrl-C to terminate" << endl;
 
     for (;;) {
         PThread::Sleep(100);

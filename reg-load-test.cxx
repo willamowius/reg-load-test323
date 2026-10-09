@@ -233,11 +233,30 @@ void LoadTestProcess::Main()
 void LoadTestProcess::Shutdown()
 {
     if (m_endpoints) {
+        unsigned numEndpoints = m_endpoints->size();
+        // report progress about every 10% of the endpoints
+        unsigned progressInterval = numEndpoints / 10;
+        if (progressInterval < 1)
+            progressInterval = 1;
+        unsigned numUnregistered = 0;
+        unsigned numNotRegistered = 0;
+        unsigned i = 0;
+
+        cout << "Unregistering " << numEndpoints << " endpoints" << endl;
         for (auto ep : *m_endpoints) {
-            if (ep->IsRegisteredWithGatekeeper())
+            if (i > 0 && i % progressInterval == 0) {
+                cout << "Progress: " << i << "/" << numEndpoints << " unregistered" << endl;
+            }
+            if (ep->IsRegisteredWithGatekeeper()) {
                 ep->RemoveGatekeeper();
+                numUnregistered++;
+            } else {
+                numNotRegistered++;
+            }
             delete ep;
+            ++i;
         }
+        cout << "Done: " << numEndpoints << " unregistered" << endl;
     }
 	_exit(0);	// HACK: avoid destruction of global objects
 }

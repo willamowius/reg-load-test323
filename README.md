@@ -29,6 +29,8 @@ The binary is placed in the `obj_*` directory created by the build.
 reg-load-test -g <gatekeeper> [options]
 ```
 
+Run without arguments or with `-h` to list all options.
+
 | Option | Description | Default |
 |---|---|---|
 | `-g`, `--gatekeeper <addr>` | Gatekeeper address (required) | – |
@@ -42,6 +44,7 @@ reg-load-test -g <gatekeeper> [options]
 | `-t`, `--trace` | Enable tracing; repeat for more detail (`-ttt`) | off |
 | `-o`, `--output <file>` | Write trace output to a file | stderr |
 | `--h46018enable` | Enable H.460.18 (only if H323Plus was built with H.460.18 support) | off |
+| `-h`, `--help` | Print usage information and exit | – |
 
 IPv6 addresses for `-i` can be given with or without brackets, eg. `[2001:db8::1]:20000`.
 

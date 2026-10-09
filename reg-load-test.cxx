@@ -93,6 +93,7 @@ void LoadTestProcess::Main()
              "c-count:"     // number of endpoints to create
              "d-delay:"     // delay between registrations in ms
              "g-gatekeeper:"
+             "h-help."
              "i-interface:"
              "o-output:"
              "p-password:"
@@ -103,6 +104,28 @@ void LoadTestProcess::Main()
              "-h46018enable."
 #endif
              , FALSE);
+
+    if (args.HasOption('h') || !args.HasOption('g')) {
+        cout << "Usage:\n"
+                "  reg-load-test -g gatekeeper [options]\n"
+                "where options:\n"
+                "  -g --gatekeeper host       Specify gatekeeper host (required)\n"
+                "  -c --count num             Number of endpoints to register (1-1000) [1]\n"
+                "  -d --delay ms              Delay between registrations in milliseconds [100]\n"
+                "  -u --usernameprefix prefix Prefix for endpoint aliases [ep]\n"
+                "  -s --servername name       Name identifying this instance in aliases [random]\n"
+                "  -p --password pwd          Specify gatekeeper H.235 password [none]\n"
+                "  -i --interface addr        Specify IP address and base port to listen on [*]\n"
+                "  -b --baseport port         Base TCP port for the H.323 listeners [random]\n"
+#ifdef H323_H46018
+                "     --h46018enable          Enable H.460.18/.19\n"
+#endif
+                "  -t --trace                 Trace enable (use multiple times for more detail)\n"
+                "  -o --output file           Specify filename for trace output [stderr]\n"
+                "  -h --help                  Display this help message\n"
+             << endl;
+        return;
+    }
 
     PTrace::Initialise(args.GetOptionCount('t'),
                      args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
